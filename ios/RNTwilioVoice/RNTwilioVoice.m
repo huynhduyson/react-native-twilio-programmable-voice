@@ -1,6 +1,9 @@
 //
 //  TwilioVoice.m
 //
+//  Created by Son Huynh on 11/19/19.
+//  Copyright © 2019 Son Huynh. All rights reserved.
+//
 
 #import "RNTwilioVoice.h"
 #import <React/RCTLog.h>
@@ -54,6 +57,10 @@ RCT_EXPORT_MODULE()
   }
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+RCT_EXPORT_METHOD(test:(NSString *)value) {
+  NSLog(@"Test call %@", value);
 }
 
 RCT_EXPORT_METHOD(initWithAccessToken:(NSString *)token) {

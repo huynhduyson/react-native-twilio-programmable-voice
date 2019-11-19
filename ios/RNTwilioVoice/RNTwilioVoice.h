@@ -1,6 +1,8 @@
 //
 //  TwilioVoice.h
-//  TwilioVoice
+//
+//  Created by Son Huynh on 11/19/19.
+//  Copyright © 2019 Son Huynh. All rights reserved.
 //
 
 #import <React/RCTBridgeModule.h>
