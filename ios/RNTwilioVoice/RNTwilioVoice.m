@@ -170,15 +170,15 @@ RCT_EXPORT_METHOD(unregister){
   self.deviceTokenString = nil;
 }
 
-RCT_EXPORT_METHOD(checkRecordPermission:(RCTResponseSenderBlock)callback) {
+RCT_EXPORT_METHOD(getRecordPermission:(RCTResponseSenderBlock)callback) {
   AVAudioSessionRecordPermission permissionStatus = [[AVAudioSession sharedInstance] recordPermission];
   BOOL permissionGranted = permissionStatus == AVAudioSessionRecordPermissionGranted;
   NSLog(@"Record permission granted %@", permissionGranted ? @"true" : @"false");
-  callback(@[[NSNull null], permissionGranted]);
+  callback(@[[NSNull null], @(permissionGranted)]);
 }
 
 RCT_REMAP_METHOD(requestRecordPermission,
-                 resolver:(RCTPromiseResolveBlock)resolve
+                 requestRecordPermissionWithResolver:(RCTPromiseResolveBlock)resolve
                  rejecter:(RCTPromiseRejectBlock)reject) {
   [self checkRecordPermission:^(BOOL permissionGranted) {
     NSLog(@"Record permission granted %@", permissionGranted ? @"true" : @"false");
