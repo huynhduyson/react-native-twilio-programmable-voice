@@ -240,7 +240,8 @@ RCT_REMAP_METHOD(getActiveCall,
   self.voipRegistry = [[PKPushRegistry alloc] initWithQueue:dispatch_get_main_queue()];
   self.voipRegistry.delegate = self;
   self.voipRegistry.desiredPushTypes = [NSSet setWithObject:PKPushTypeVoIP];
-  
+  NSLog(@"PushRegistry Initialized");
+    
   /*
    * The important thing to remember when providing a TVOAudioDevice is that the device must be set
    * before performing any other actions with the SDK (such as connecting a Call, or accepting an incoming Call).
@@ -255,8 +256,10 @@ RCT_REMAP_METHOD(getActiveCall,
     NSString *accessToken = [NSString stringWithContentsOfURL:[NSURL URLWithString:_tokenUrl]
                                                      encoding:NSUTF8StringEncoding
                                                         error:nil];
+    NSLog(@"AccessToken: %@", accessToken);
     return accessToken;
   } else {
+    NSLog(@"AccessToken: %@", _token);
     return _token;
   }
 }
@@ -297,6 +300,7 @@ RCT_REMAP_METHOD(getActiveCall,
                               ntohl(tokenBytes[0]), ntohl(tokenBytes[1]), ntohl(tokenBytes[2]),
                               ntohl(tokenBytes[3]), ntohl(tokenBytes[4]), ntohl(tokenBytes[5]),
                               ntohl(tokenBytes[6]), ntohl(tokenBytes[7])];
+    NSLog(@"DeviceToken: %@", self.deviceTokenString);
     NSString *accessToken = [self fetchAccessToken];
 
     [TwilioVoice registerWithAccessToken:accessToken
@@ -441,7 +445,6 @@ RCT_REMAP_METHOD(getActiveCall,
   if (self.callInvite.callSid){
     [params setObject:self.callInvite.callSid forKey:@"call_sid"];
   }
-
   if (self.callInvite.from){
     [params setObject:[self.callInvite.from fromValue] forKey:@"from"];
   }
@@ -465,7 +468,18 @@ RCT_REMAP_METHOD(getActiveCall,
 
 #pragma mark - TVOCallDelegate
 - (void)callDidStartRinging:(TVOCall *)call {
-    NSLog(@"callDidStartRinging:");
+  NSLog(@"callDidStartRinging:");
+  
+  NSMutableDictionary *callParams = [[NSMutableDictionary alloc] init];
+  [callParams setObject:call.sid forKey:@"call_sid"];
+
+  if (call.from){
+    [callParams setObject:[call.from fromValue] forKey:@"from"];
+  }
+  if (call.to){
+    [callParams setObject:call.to forKey:@"to"];
+  }
+  [self sendEventWithName:@"connectionDidStartRinging" body:callParams];
 }
 
 - (void)callDidConnect:(TVOCall *)call {
