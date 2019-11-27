@@ -149,7 +149,7 @@ RCT_EXPORT_METHOD(connect: (NSDictionary *)params) {
 RCT_EXPORT_METHOD(disconnect) {
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 Disconnecting call");
   // Caller: perform end call on: didFailToConnectWithError, disconnect call manually
-  // Receiver: perform end call on: cancelledCallInviteReceived, didFailToConnectWithError
+  // Receiver: perform end call on: didFailToConnectWithError, cancelledCallInviteReceived
   [self performEndCallActionWithUUID:self.call.uuid];
 }
 
@@ -442,13 +442,14 @@ RCT_REMAP_METHOD(getActiveCall,
 }
 
 #pragma mark - TVONotificationDelegate
+// Receiver: Notifies the delegate that a Call Invite was received.
 - (void)callInviteReceived:(TVOCallInvite *)callInvite {
   /**
    * Calling `[TwilioVoice handleNotification:delegate:]` will synchronously process your notification payload and
    * provide you a `TVOCallInvite` object. Report the incoming call to CallKit upon receiving this callback.
    */
 
-  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 callInviteReceived:");
+  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 callInviteReceived");
 
   if (self.callInvite) {
     NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 A CallInvite is already in progress. Ignoring the incoming CallInvite from %@", callInvite.from);
@@ -473,6 +474,7 @@ RCT_REMAP_METHOD(getActiveCall,
   [self reportIncomingCallFrom:callInvite];
 }
 
+// Receiver: Notifies the delegate that a Cancelled Call Invite was received.
 - (void)cancelledCallInviteReceived:(TVOCancelledCallInvite *)cancelledCallInvite error:(NSError *)error {
     
   /**
@@ -481,7 +483,7 @@ RCT_REMAP_METHOD(getActiveCall,
    * party could answer or reject the call.
    */
 
-  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 cancelledCallInviteReceived:");
+  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 cancelledCallInviteReceived");
 
   if (!self.callInvite ||
     ![self.callInvite.callSid isEqualToString:cancelledCallInvite.callSid]) {
@@ -493,7 +495,7 @@ RCT_REMAP_METHOD(getActiveCall,
   [self sendEventWithName:@"cancelledCallInviteReceived" body:params];
 
   // Caller: perform end call on: didFailToConnectWithError, disconnect call manually
-  // Receiver: perform end call on: cancelledCallInviteReceived, didFailToConnectWithError
+  // Receiver: perform end call on: didFailToConnectWithError, cancelledCallInviteReceived
   [self performEndCallActionWithUUID:self.callInvite.uuid];
   self.callInvite = nil;
 }
@@ -503,6 +505,7 @@ RCT_REMAP_METHOD(getActiveCall,
 }
 
 #pragma mark - TVOCallDelegate
+// Caller: Notifies the delegate that the called party is being alerted of a Call.
 - (void)callDidStartRinging:(TVOCall *)call {
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 callDidStartRinging");
   
@@ -512,6 +515,7 @@ RCT_REMAP_METHOD(getActiveCall,
   [self sendEventWithName:@"callDidStartRinging" body:params];
 }
 
+// Caller/Receiver: Notifies the delegate that a Call has connected.
 - (void)callDidConnect:(TVOCall *)call {
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 callDidConnect");
   
@@ -525,6 +529,11 @@ RCT_REMAP_METHOD(getActiveCall,
   [self sendEventWithName:@"callDidConnect" body:params];
 }
 
+// Caller/Receiver: Notifies the delegate that a Call starts to reconnect due to network change event.
+/* Reconnect is triggered when a network change is detected and Call is already in `TVOCallStateConnected` state.
+ * If the call is either in `TVOCallStateConnecting` or in `TVOCallStateRinging` when network change happened
+ * then the current call will disconnect.
+ */
 - (void)call:(TVOCall *)call isReconnectingWithError:(NSError *)error {
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 call isReconnectingWithError: %@", error);
 
@@ -534,6 +543,7 @@ RCT_REMAP_METHOD(getActiveCall,
   [self sendEventWithName:@"callReconnecting" body:params];
 }
 
+// Caller/Receiver: Notifies the delegate that a Call is reconnected.
 - (void)callDidReconnect:(TVOCall *)call {
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 callDidReconnect");
 
@@ -543,6 +553,7 @@ RCT_REMAP_METHOD(getActiveCall,
   [self sendEventWithName:@"callDidReconnect" body:params];
 }
 
+// Caller/Receiver: Notifies the delegate that a Call has failed to connect/accept.
 - (void)call:(TVOCall *)call didFailToConnectWithError:(NSError *)error {
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 call didFailToConnectWithError: %@", error);
 
@@ -553,11 +564,12 @@ RCT_REMAP_METHOD(getActiveCall,
   [self sendEventWithName:@"callDidFailToConnect" body:params];
 
   // Caller: perform end call on: didFailToConnectWithError, disconnect call manually
-  // Receiver: perform end call on: cancelledCallInviteReceived, didFailToConnectWithError
+  // Receiver: perform end call on: didFailToConnectWithError, cancelledCallInviteReceived
   [self performEndCallActionWithUUID:call.uuid];
   [self callDisconnected];
 }
 
+// Caller/Receiver: Notifies the delegate that a Call has disconnected.
 - (void)call:(TVOCall *)call didDisconnectWithError:(NSError *)error {
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 call didDisconnectWithError: %@", error);
 
@@ -566,7 +578,7 @@ RCT_REMAP_METHOD(getActiveCall,
   NSMutableDictionary *params = [self paramsForError:error];
   [self sendEventWithName:@"callDidDisconnect" body:params];
 
-  // Receiver
+  // Receiver:
   if (!self.userInitiatedDisconnect) {
     CXCallEndedReason reason = CXCallEndedReasonRemoteEnded;
     if (error) {
@@ -633,8 +645,8 @@ RCT_REMAP_METHOD(getActiveCall,
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 provider:timedOutPerformingAction");
 }
 
-// Called when the provider performs the specified start call action.
-// Called after: perform start call manually
+// Caller: Called when the provider performs the specified start call action.
+// Caller: Called after perform start call manually
 - (void)provider:(CXProvider *)provider performStartCallAction:(CXStartCallAction *)action {
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 provider:performStartCallAction");
 
@@ -658,7 +670,8 @@ RCT_REMAP_METHOD(getActiveCall,
   }];
 }
 
-// Called when the provider performs the specified answer call action.
+// Receiver: Called when the provider performs the specified answer call action.
+// Receiver: Called after accepts the incoming Call Invite via CallKit.
 - (void)provider:(CXProvider *)provider performAnswerCallAction:(CXAnswerCallAction *)action {
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 provider:performAnswerCallAction");
 
@@ -686,14 +699,20 @@ RCT_REMAP_METHOD(getActiveCall,
 
 // Called when the provider performs the specified end call action.
 // Called after: perform end call
+// Caller: perform end call on: didFailToConnectWithError, disconnect call manually or via CallKit
+// Receiver: perform end call on: didFailToConnectWithError, cancelledCallInviteReceived
 - (void)provider:(CXProvider *)provider performEndCallAction:(CXEndCallAction *)action {
   NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 provider:performEndCallAction");
 
   if (self.callInvite) {
     [self sendEventWithName:@"callRejected" body:@"callRejected"];
+    NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 Rejects the incoming Call Invite");
+    // Receiver: Rejects the incoming Call Invite: via CallKit
     [self.callInvite reject];
     self.callInvite = nil;
   } else if (self.call) {
+    NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 Disconnects the Call");
+    // Caller: Disconnects the Call on: disconnect call manually
     [self.call disconnect];
   }
 
@@ -717,6 +736,7 @@ RCT_REMAP_METHOD(getActiveCall,
   if (uuid == nil || handle == nil) {
     return;
   }
+  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 Caller: performStartCallActionWithUUID");
 
   CXHandle *callHandle = [[CXHandle alloc] initWithType:CXHandleTypeGeneric value:handle];
   CXStartCallAction *startCallAction = [[CXStartCallAction alloc] initWithCallUUID:uuid handle:callHandle];
@@ -745,6 +765,8 @@ RCT_REMAP_METHOD(getActiveCall,
 
 // Receiver: report imcoming call on: callInviteReceived
 - (void)reportIncomingCallFrom:(TVOCallInvite *)callInvite {
+  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 Receiver: reportIncomingCallFrom");
+
   NSString *from = nil;
   if (callInvite.from) {
     from = [callInvite.from fromValue];
@@ -773,13 +795,17 @@ RCT_REMAP_METHOD(getActiveCall,
       // [TwilioVoice configureAudioSession];
     } else {
       NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 Failed to report incoming call successfully: %@.", [error localizedDescription]);
+      // An incoming call may be disallowed by the system if, 
+      // for example, the caller handle is blocked, or the user has Do Not Disturb enabled.
     }
   }];
 }
 
 // Caller: perform end call on: didFailToConnectWithError, disconnect call manually
-// Receiver: perform end call on: cancelledCallInviteReceived, didFailToConnectWithError
+// Receiver: perform end call on: didFailToConnectWithError, cancelledCallInviteReceived
 - (void)performEndCallActionWithUUID:(NSUUID *)uuid {
+  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 Caller/Receiver: performEndCallActionWithUUID");
+  
   UIDevice* device = [UIDevice currentDevice];
   device.proximityMonitoringEnabled = NO;
 
@@ -799,11 +825,16 @@ RCT_REMAP_METHOD(getActiveCall,
 - (void)performVoiceCallWithUUID:(NSUUID *)uuid
                           client:(NSString *)client
                       completion:(void(^)(BOOL success))completionHandler {
+  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 Caller: Make an outgoing Call / performVoiceCallWithUUID");
+  
   TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:[self fetchAccessToken] block:^(TVOConnectOptionsBuilder *builder) {
     NSString *handle = [_callParams valueForKey:kTwimlParamTo];
     builder.params = @{kTwimlParamTo: handle};
     builder.uuid = uuid;
   }];
+
+  // Make an outgoing Call.
+  // If connect fails, `call:didFailToConnectWithError` or `call:didDisconnectWithError` callback is raised with an `NSError` object.
   self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
   self.callKitCompletionCallback = completionHandler;
 }
@@ -811,12 +842,16 @@ RCT_REMAP_METHOD(getActiveCall,
 // Receiver: Accepts the incoming Call Invite.
 - (void)performAnswerVoiceCallWithUUID:(NSUUID *)uuid
                             completion:(void(^)(BOOL success))completionHandler {
+  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👉 Receiver: Accepts the incoming Call Invite / performAnswerVoiceCallWithUUID");
+  
   __weak typeof(self) weakSelf = self;
   TVOAcceptOptions *acceptOptions = [TVOAcceptOptions optionsWithCallInvite:self.callInvite block:^(TVOAcceptOptionsBuilder *builder) {
     __strong typeof(self) strongSelf = weakSelf;
     builder.uuid = strongSelf.callInvite.uuid; // replace with uuid param?
   }];
 
+  // Accepts the incoming Call Invite.
+  // If accept fails, `call:didFailToConnectWithError:` or `call:didDisconnectWithError:` callback is raised with an `NSError` object.
   self.call = [self.callInvite acceptWithOptions:acceptOptions delegate:self];
 
   if (!self.call) {

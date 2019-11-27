@@ -12,11 +12,18 @@ const TwilioVoice = NativeModules.RNTwilioVoice
 const NativeAppEventEmitter = new NativeEventEmitter(TwilioVoice)
 
 const _eventHandlers = {
-    deviceReady: new Map(),
-    deviceNotReady: new Map(),
-    deviceDidReceiveIncoming: new Map(),
-    connectionDidConnect: new Map(),
-    connectionDidDisconnect: new Map(),
+    twilioVoiceDidRegister: new Map(),
+    twilioVoiceDidFailToRegister: new Map(),
+    twilioVoiceDidUnregister: new Map(),
+    callInviteReceived: new Map(),
+    callIncomingReceived: new Map(),
+    cancelledCallInviteReceived: new Map(),
+    callDidStartRinging: new Map(),
+    callDidConnect: new Map(),
+    callDidFailToConnect: new Map(),
+    callDidDisconnect: new Map(),
+    callReconnecting: new Map(),
+    callDidReconnect: new Map(),
     //iOS specific
     callRejected: new Map(),
 }
