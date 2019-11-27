@@ -71,6 +71,7 @@ RCT_EXPORT_MODULE()
            @"twilioVoiceDidUnregister",
            @"callInviteReceived",
            @"callIncomingReceived",
+           @"callIncomingAccepted",
            @"cancelledCallInviteReceived",
            @"callDidStartRinging",
            @"callDidConnect",
@@ -685,6 +686,9 @@ RCT_REMAP_METHOD(getActiveCall,
   self.audioDevice.enabled = NO;
   self.audioDevice.block();
   
+  NSMutableDictionary *params = [self callInviteParamsFor:self.callInvite];
+  [self sendEventWithName:@"callIncomingAccepted" body:params];
+
   // Receiver: Accepts the incoming Call Invite.
   [self performAnswerVoiceCallWithUUID:action.callUUID completion:^(BOOL success) {
     if (success) {
