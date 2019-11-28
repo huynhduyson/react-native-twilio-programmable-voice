@@ -69,6 +69,7 @@ RCT_EXPORT_MODULE()
   return @[@"twilioVoiceDidRegister",
            @"twilioVoiceDidFailToRegister",
            @"twilioVoiceDidUnregister",
+           @"callOutgoingStarted",
            @"callInviteReceived",
            @"callIncomingReceived",
            @"callIncomingAccepted",
