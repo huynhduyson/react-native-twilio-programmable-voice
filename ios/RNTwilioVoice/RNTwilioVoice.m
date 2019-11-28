@@ -156,12 +156,12 @@ RCT_EXPORT_METHOD(disconnect) {
 }
 
 RCT_EXPORT_METHOD(setMuted: (BOOL *)muted) {
-  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👇 action -> setMuted: %@", muted);
+  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👇 action -> setMuted");
   self.call.muted = muted;
 }
 
 RCT_EXPORT_METHOD(setSpeakerPhone: (BOOL *)speaker) {
-  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👇 action -> setSpeakerPhone: %@", speaker);
+  NSLog(@"\n\n\n☎️ RNTwilioVoice ☎️ 👇 action -> setSpeakerPhone");
   [self toggleAudioRoute:speaker];
 }
 
