@@ -15,6 +15,7 @@ const _eventHandlers = {
     twilioVoiceDidRegister: new Map(),
     twilioVoiceDidFailToRegister: new Map(),
     twilioVoiceDidUnregister: new Map(),
+    callOutgoingStarted: new Map(),
     callInviteReceived: new Map(),
     callIncomingReceived: new Map(),
     callIncomingAccepted: new Map(),
