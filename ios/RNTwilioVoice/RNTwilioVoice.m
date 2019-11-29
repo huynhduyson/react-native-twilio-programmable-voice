@@ -534,7 +534,7 @@ RCT_REMAP_METHOD(getActiveCall,
   self.callKitCompletionCallback(YES);
   self.callKitCompletionCallback = nil;
   
-  [self toggleAudioRoute:YES];
+  [self toggleAudioRoute:NO];
 
   NSMutableDictionary *params = [self callParamsFor:call];
   [self sendEventWithName:@"callDidConnect" body:params];
